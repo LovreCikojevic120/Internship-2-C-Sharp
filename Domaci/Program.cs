@@ -10,8 +10,9 @@ namespace Domaci
             string options = null;
 
             var popis = new Dictionary<string, (string nameAndSurname, DateTime dateOfBirth)>();
-            popis.Add("123", ("Ivan bakotin", new DateTime(2021,10,10)));
-            popis.Add("12335436", ("Ivan debil", DateTime.UtcNow));
+            popis.Add("11111111111", ("Ivan bakotin", new DateTime(2021,10,10)));
+            popis.Add("12345678910", ("Ivan bakotin", new DateTime(2021,10,10)));
+            popis.Add("00000000000", ("Ivan debil", new DateTime(2021,1,1)));
 
             do
             {
@@ -48,19 +49,19 @@ namespace Domaci
                         break;
                     case "5":
                         Console.Clear();
-                        //brisiPoOIB();
+                        brisiPoOIB(popis);
                         break;
                     case "6":
                         Console.Clear();
-                        //brisiPoImenu();
+                        brisiPoImenu(popis);
                         break;
                     case "7":
                         Console.Clear();
-                        //brisiSve();
+                        brisiSve(popis);
                         break;
                     case "8":
                         Console.Clear();
-                        //uredi();
+                        uredi(popis);
                         break;
                     case "9":
                         Console.Clear();
@@ -90,12 +91,229 @@ namespace Domaci
             return lista;
         }
 
+        static void uredi(Dictionary<string, (string, DateTime)> popis)
+        {
+            string meni = null, oib = null, noviOIB = null;
+
+            do
+            {
+                Console.WriteLine("Izaberite akciju:\n" +
+                    "1 - Uredi OIB\n" +
+                    "2 - Uredi ime i prezime\n" +
+                    "3 - Uredi datum rodenja\n" +
+                    "0 - Povratak na glavni izbornik\n");
+                meni = Console.ReadLine();
+
+                switch (meni)
+                {
+                    case "1":
+                        oib = ispisPoOIB(popis);
+                        if(oib is null)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Upisite novi OIB:\n");
+                            noviOIB = Console.ReadLine();
+                            if (noviOIB.Length is not 11)
+                            {
+                                Console.WriteLine("OIB krivo upisan, vracam na izbornik!\n");
+                                Console.ReadKey();
+                                Console.Clear();
+                                break;
+                            }
+                            else
+                            {
+                                var ime = popis[oib].Item1;
+                                var datumRod = popis[oib].Item2;
+                                popis.Remove(oib);
+                                popis.Add(noviOIB, (ime, datumRod));
+                                Console.WriteLine("OIB uspjesno promijenjen, pritisnite bilo koju tipku za povratak na izbornik!\n");
+                                Console.ReadKey();
+                                Console.Clear();
+                            }
+                        }
+                        break;
+
+                    case "2":
+                        oib = ispisPoOIB(popis);
+                        if (oib is null)
+                        {
+                            meni = null;
+                            break;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Upisite novo ime:\n");
+                            var novoIme = Console.ReadLine();
+                            if (novoIme is "")
+                            {
+                                Console.WriteLine("Ime i prezime krivo upisano, pritisnite bilo koju tipku za povratak na izbornik!\n");
+                                Console.ReadKey();
+                                Console.Clear();
+                                break;
+                            }
+                            else
+                            {
+                                popis[oib] = (novoIme, popis[oib].Item2);
+                                Console.WriteLine("Ime i prezime uspjesno promijenjeni, pritisnite bilo koju tipku za povratak na izbornik!\n");
+                                Console.ReadKey();
+                                Console.Clear();
+                            }
+                        }
+                        break;
+
+                    case "3":
+                        oib = ispisPoOIB(popis);
+                        if (oib is null)
+                        {
+                            meni = null;
+                            break;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Upisite novi datum rodenja:\n");
+                            var noviDatum = Console.ReadLine();
+                            if (noviDatum is "")
+                            {
+                                Console.WriteLine("Ime i prezime krivo upisano, pritisnite bilo koju tipku za povratak na izbornik!\n");
+                                Console.ReadKey();
+                                Console.Clear();
+                                break;
+                            }
+                            else
+                            {
+                                popis[oib] = (popis[oib].Item1, DateTime.ParseExact(noviDatum, "d", null));
+                                Console.WriteLine("Datum rodenja uspjesno promijenjen, pritisnite bilo koju tipku za povratak na izbornik!\n");
+                                Console.ReadKey();
+                                Console.Clear();
+                            }
+                        }
+                        break;
+
+                    case "0":
+                        meni = "0";
+                        Console.Clear();
+                        break;
+
+                    default:
+                        Console.WriteLine("Krivi unos izbornika, pritisnite bilo koju tipku za povratak na izbornik!\n");
+                        Console.ReadKey();
+                        Console.Clear();
+                        break;
+                }
+
+            } while (meni is not "0");
+        }
+
+        static void brisiSve(Dictionary<string, (string, DateTime)> popis)
+        {
+            Console.WriteLine("Jeste li sigurni da zelite izbrisati cijeli popis?\n1 - DA\n0 - NE\n");
+            var izbor = Console.ReadLine();
+            if (izbor == "1") {
+                popis.Clear();
+                Console.WriteLine("Popis izbrisan, pritisnite bilo koju tipku za povratak\n");
+                Console.ReadKey();
+                Console.Clear();
+                return;
+            }
+            if (izbor == "0")
+            {
+                Console.WriteLine("Brisanje prekinuto, pritisnite bilo koju tipku za povratak na glavni izbornik!");
+                Console.ReadKey();
+                Console.Clear();
+                return;
+            }
+            else
+            {
+                Console.WriteLine("Krivi unos izbornika, pritisnite bilo koju tipku za povratak na glavni izbornik!");
+                Console.ReadKey();
+                Console.Clear();
+                return;
+            }
+        }
+
+        static void brisiPoImenu(Dictionary<string, (string, DateTime)> popis)
+        {
+            int count = 0;
+            string oibZaJednuOsobu = null;
+            Console.WriteLine("Unesite ime i prezime osobe koju zelite izbrisati:");
+            var ime = Console.ReadLine();
+            Console.WriteLine("Unesite datum rodenja osobe koju zelite izbrisati:");
+            var datumRod = Console.ReadLine();
+
+            foreach (var lik in popis)
+            {
+                if (lik.Value.Item1 == ime && lik.Value.Item2.ToShortDateString() == datumRod)
+                {
+                    Console.WriteLine("Pronadeno: " + ime + " " + datumRod + " " + lik.Key + "\n");
+                    oibZaJednuOsobu = lik.Key;
+                    count++;
+                }
+            }
+            if (count > 1)
+            {
+                Console.WriteLine("Pronadeno vise osoba, upisite OIB osobe koju zelite izbrisati!\n");
+                var oib = Console.ReadLine();
+                popis.Remove(oib);
+                Console.WriteLine("Osoba is OIB-om " + oib + " izbrisana, pritisnite bilo koju tipku za povratak\n");
+                Console.ReadKey();
+                Console.Clear();
+            }
+            if (count == 1)
+            {
+                popis.Remove(oibZaJednuOsobu);
+                Console.WriteLine("Osoba is OIB-om " + oibZaJednuOsobu + " izbrisana, pritisnite bilo koju tipku za povratak\n");
+                Console.ReadKey();
+                Console.Clear();
+            }
+
+            if (count == 0)
+            {
+                Console.WriteLine("Osoba sa tim OIB-om nije pronadena, pritisnite bilo koju tipku za povratak");
+                Console.ReadKey();
+                Console.Clear();
+                return;
+            }
+        }
+
+        static void brisiPoOIB(Dictionary<string, (string, DateTime)> popis)
+        {
+
+            int flag = 0;
+            Console.WriteLine("Unesite OIB osobe koju zelite izbrisati:");
+            var oib = Console.ReadLine();
+            foreach (var lik in popis)
+            {
+                if (lik.Key == oib)
+                {
+                    popis.Remove(lik.Key);
+                    Console.WriteLine("Osoba is OIB-om " + oib + " izbrisana, pritisnite bilo koju tipku za povratak\n");
+                    Console.ReadKey();
+                    Console.Clear();
+                    flag = 1;
+                    break;
+                }
+                else flag = 0;
+            }
+
+            if (flag == 0)
+            {
+                Console.WriteLine("Osoba sa tim OIB-om nije pronadena, pritisnite bilo koju tipku za povratak");
+                Console.ReadKey();
+                Console.Clear();
+                return;
+            }
+        }
+
         static void unesiNovog(Dictionary<string, (string, DateTime)> popis)
         {
             string ime = null,oib = null, izlaz = "0", datumRod = null, menu = null;
 
             do
             {
+                izlaz = "0";
                 Console.WriteLine("Upisite ime i prezime osobe koju zelite unijeti:");
                 ime = Console.ReadLine();
                 
@@ -120,6 +338,8 @@ namespace Domaci
                         "1 - Pokusajte ponovno\n0 - Povratak na glavni izbornik");
                     izlaz = Console.ReadLine();
                     if (izlaz == "0") menu = "0";
+                    else if (izlaz == "1") menu = "3";
+                    else menu = null;
                 }
 
                 switch (menu)
@@ -141,13 +361,16 @@ namespace Domaci
                         Console.Clear();
                         return;
                     default:
+                        Console.WriteLine("Krivi unos izbornika, pritisnite bilo koju tipku za povratak na unos osobe!");
+                        izlaz = "1";
+                        Console.ReadKey();
                         Console.Clear();
-                        Console.WriteLine("Krivi unos izbornika!");
                         break;
                 }
                
             } while (izlaz is "1");
         }
+        
         static void ispisPoImenu(Dictionary<string, (string, DateTime)> popis)
         {
             string odgovor = null, izlaz = "1";
@@ -180,7 +403,7 @@ namespace Domaci
             } while (izlaz is "1");
         }
 
-        static void ispisPoOIB(Dictionary<string, (string, DateTime)> popis)
+        static string ispisPoOIB(Dictionary<string, (string, DateTime)> popis)
         {
             string oib = null;
             string izlaz = "1";
@@ -190,7 +413,7 @@ namespace Domaci
             {
                 Console.WriteLine("Upišite OIB stanovnika kojeg trazite:");
                 oib = Console.ReadLine();
-                if (oib is "" || oib.Length is not 11) { 
+                if (oib.Length is not 11) { 
                     Console.WriteLine("OIB krivo upisan, pokusajte ponovo!");
                 }
                 foreach (var lik in popis)
@@ -209,6 +432,9 @@ namespace Domaci
                 Console.Clear();
 
             } while (izlaz is "1");
+
+            if (flag == 1) return oib;
+            else return null;
         }
 
         static void ispisStanovnistva(Dictionary<string,(string,DateTime)> popis)
