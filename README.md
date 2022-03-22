@@ -1,1 +1,3 @@
-# Internship-2-C-Sharp
+# DUMP Internship Assignment #2
+
+Project covering C# basics
